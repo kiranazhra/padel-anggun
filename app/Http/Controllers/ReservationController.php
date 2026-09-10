@@ -199,6 +199,30 @@ class ReservationController extends Controller
     }
 
     /**
+     * Batalkan reservasi milik sendiri dari tombol "Kelola" di dasbor
+     * customer. Hanya pemilik reservasi yang boleh membatalkan; reservasi
+     * yang sudah dibatalkan tidak bisa dibatalkan lagi.
+     */
+    public function cancel(Request $request, Reservation $reservation): RedirectResponse
+    {
+        abort_unless($reservation->user_id === $request->user()->id, 403);
+
+        if ($reservation->status === 'dibatalkan') {
+            return redirect()->route('dashboard')->with('status', 'Reservasi ini sudah dibatalkan sebelumnya.');
+        }
+
+        $reservation->update(['status' => 'dibatalkan']);
+
+        // Bebaskan slot pelatih yang otomatis ter-booking dari reservasi ini,
+        // sama seperti saat admin menolak reservasi (route admin.reservasi.tolak).
+        $reservation->coachSession?->delete();
+
+        return redirect()
+            ->route('dashboard')
+            ->with('status', 'Reservasi ' . $reservation->court_nama . ' telah dibatalkan.');
+    }
+
+    /**
      * Backfill: buat sesi di Jadwal Pelatih untuk reservasi lama yang sudah
      * punya pelatih tapi belum tersinkron (misalnya dibuat sebelum fitur ini
      * ada, atau sempat gagal karena migration belum jalan). Dipanggil dari

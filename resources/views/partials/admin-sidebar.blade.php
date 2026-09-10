@@ -41,7 +41,7 @@
     </div>
 
     <div class="mt-auto px-3 border-t border-outline-variant/30 pt-4 space-y-1">
-        <a class="pa-sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant opacity-80 hover:bg-secondary-container transition-colors duration-200" href="#" title="Bantuan">
+        <a class="pa-sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant opacity-80 hover:bg-secondary-container transition-colors duration-200" href="https://wa.me/6281199887766?text={{ urlencode('Halo tim support Padel Anggun, saya butuh bantuan terkait panel admin.') }}" target="_blank" rel="noopener noreferrer" title="Bantuan">
             <span class="material-symbols-outlined">help</span>
             <span class="font-label-sm text-label-sm pa-sidebar-label">Bantuan</span>
         </a>

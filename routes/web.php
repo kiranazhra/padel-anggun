@@ -62,6 +62,9 @@ Route::middleware(['auth', 'redirect.admin'])->group(function () {
 
     Route::get('/reservasi/{court}', [ReservationController::class, 'show'])->name('reservasi.detail');
     Route::post('/reservasi/{court}', [ReservationController::class, 'store'])->name('reservasi.store');
+
+    // Kelola (batalkan) reservasi milik sendiri dari tombol "Kelola" di dasbor.
+    Route::patch('/dashboard/reservasi/{reservation}/batalkan', [ReservationController::class, 'cancel'])->name('reservasi.batalkan');
 });
 
 // Profil akun sendiri — dipakai baik oleh customer maupun admin, jadi

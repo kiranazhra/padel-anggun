@@ -12,12 +12,13 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $reservasiMenunggu = Reservation::where('status', 'menunggu_konfirmasi')->latest()->get();
         $totalPendapatan = Reservation::where('status', 'terkonfirmasi')->sum('total_harga');
         $totalAnggota = User::count();
         $totalReservasi = Reservation::count();
+        $trendMingguan = $this->weeklyRevenueTrend($request->query('minggu'));
 
         // Prefer persisted activity logs when available
         if (ActivityLog::count() > 0) {
@@ -42,8 +43,49 @@ class DashboardController extends Controller
         }
 
         return view('admin.dashboard', compact(
-            'reservasiMenunggu', 'totalPendapatan', 'totalAnggota', 'totalReservasi', 'aktivitas'
+            'reservasiMenunggu', 'totalPendapatan', 'totalAnggota', 'totalReservasi', 'aktivitas', 'trendMingguan'
         ))->with('unreadNotifications', $unread);
+    }
+
+    /**
+     * Hitung pendapatan (reservasi berstatus "terkonfirmasi") per hari untuk
+     * satu minggu (Senin-Minggu), dihitung dari data reservasi asli di
+     * database — bukan angka statis. Filter tanggal memilih minggu mana
+     * yang ditampilkan lewat parameter query "minggu" (tanggal berapa saja
+     * dalam minggu yang diinginkan; otomatis dibulatkan ke Senin).
+     *
+     * @return array{start: \Carbon\Carbon, end: \Carbon\Carbon, hari: array<int, array{label: string, tanggal: string, total: int, isToday: bool}>}
+     */
+    private function weeklyRevenueTrend(?string $tanggalDiMinggu): array
+    {
+        $acuan = $tanggalDiMinggu ? Carbon::parse($tanggalDiMinggu) : now();
+        $start = $acuan->copy()->startOfWeek(Carbon::MONDAY);
+        $end = $acuan->copy()->endOfWeek(Carbon::SUNDAY);
+
+        // Dikelompokkan di PHP (bukan raw SQL per-driver) supaya query tetap
+        // portable antara SQLite (dev/testing) dan MySQL (produksi) — sama
+        // seperti pola yang dipakai di FinanceReportController.
+        $totalPerHari = Reservation::whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->where('status', 'terkonfirmasi')
+            ->get(['tanggal', 'total_harga'])
+            ->groupBy(fn (Reservation $r) => $r->tanggal->format('N')) // 1 (Senin) - 7 (Minggu)
+            ->map(fn ($group) => (int) $group->sum('total_harga'));
+
+        $namaHari = ['1' => 'Sen', '2' => 'Sel', '3' => 'Rab', '4' => 'Kam', '5' => 'Jum', '6' => 'Sab', '7' => 'Min'];
+
+        $hari = [];
+        $tanggalBerjalan = $start->copy();
+        foreach ($namaHari as $n => $label) {
+            $hari[] = [
+                'label' => $label,
+                'tanggal' => $tanggalBerjalan->toDateString(),
+                'total' => (int) ($totalPerHari[$n] ?? 0),
+                'isToday' => $tanggalBerjalan->isToday(),
+            ];
+            $tanggalBerjalan->addDay();
+        }
+
+        return ['start' => $start, 'end' => $end, 'hari' => $hari];
     }
 
     /**

@@ -68,7 +68,7 @@
 </div>
 </div>
 <div class="relative z-10 flex gap-4 mt-auto">
-<button class="btn-animated bg-tertiary text-on-tertiary font-label-sm text-label-sm h-12 px-8 rounded-lg hover:bg-tertiary/90 transition-colors">
+<button type="button" id="kelolaBtn" class="btn-animated bg-tertiary text-on-tertiary font-label-sm text-label-sm h-12 px-8 rounded-lg hover:bg-tertiary/90 transition-colors">
     Kelola
 </button>
 <button class="border border-outline-variant text-on-secondary font-label-sm text-label-sm h-12 px-8 rounded-lg hover:bg-white/10 transition-colors" onclick="location.href='{{ route('lapangan') }}'">
@@ -76,6 +76,73 @@
 </button>
 </div>
 </div>
+
+<!-- Modal Kelola Reservasi -->
+<div id="kelolaModal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center px-4">
+<div class="bg-surface-container-lowest rounded-xl w-full max-w-md p-6 elegant-shadow">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-headline-md text-secondary">Kelola Reservasi</h3>
+<button type="button" id="kelolaClose" class="p-1 text-on-surface-variant hover:text-secondary">&times;</button>
+</div>
+<div class="space-y-3 mb-6 font-body-md text-body-md text-on-background">
+<div class="flex justify-between">
+<span class="text-outline">Lapangan</span>
+<span class="font-semibold">{{ $reservasi->court_nama }}</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline">Tanggal &amp; Waktu</span>
+<span class="font-semibold text-right">{{ $reservasi->tanggal->translatedFormat('d M Y') }}, {{ $reservasi->waktu }}</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline">Lokasi</span>
+<span class="font-semibold text-right">{{ $reservasi->lokasi }}</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline">Pelatih</span>
+<span class="font-semibold">{{ $reservasi->coach_nama ?? 'Tanpa Pelatih' }}</span>
+</div>
+<div class="flex justify-between">
+<span class="text-outline">Total Biaya</span>
+<span class="font-semibold">Rp {{ number_format($reservasi->total_harga, 0, ',', '.') }}</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-outline">Status</span>
+@if ($reservasi->isTerkonfirmasi())
+<span class="bg-secondary-fixed/50 text-on-secondary-fixed px-3 py-1 rounded-full text-xs font-semibold">Terkonfirmasi</span>
+@elseif ($reservasi->status === 'dibatalkan')
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-xs font-semibold">Dibatalkan</span>
+@else
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-xs font-semibold">Menunggu Konfirmasi</span>
+@endif
+</div>
+</div>
+@if ($reservasi->status !== 'dibatalkan')
+<form method="POST" action="{{ route('reservasi.batalkan', $reservasi) }}" onsubmit="return confirm('Batalkan reservasi {{ $reservasi->court_nama }} pada {{ $reservasi->tanggal->translatedFormat('d M Y') }}?');">
+    @csrf
+    @method('PATCH')
+    <button type="submit" class="w-full border border-error text-error font-label-sm text-label-sm h-12 rounded-lg hover:bg-error/10 transition-colors">
+        Batalkan Reservasi
+    </button>
+</form>
+@else
+<p class="text-center font-body-sm text-sm text-outline">Reservasi ini sudah dibatalkan.</p>
+@endif
+</div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const kelolaBtn = document.getElementById('kelolaBtn');
+        const kelolaModal = document.getElementById('kelolaModal');
+        const kelolaClose = document.getElementById('kelolaClose');
+
+        const show = (el) => el && el.classList.remove('hidden');
+        const hide = (el) => el && el.classList.add('hidden');
+
+        if (kelolaBtn) kelolaBtn.addEventListener('click', () => show(kelolaModal));
+        if (kelolaClose) kelolaClose.addEventListener('click', () => hide(kelolaModal));
+        if (kelolaModal) kelolaModal.addEventListener('click', (e) => { if (e.target === kelolaModal) hide(kelolaModal); });
+    });
+</script>
 @else
 <div class="reveal reveal-delay-1 lg:col-span-2 bg-surface-container-lowest rounded-xl p-5 elegant-shadow border border-dashed border-outline-variant flex flex-col items-center justify-center text-center min-h-[220px] gap-4">
 <span class="material-symbols-outlined text-tertiary text-4xl">sports_tennis</span>

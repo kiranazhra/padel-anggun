@@ -99,34 +99,44 @@
 </table>
 </div>
 </div>
-<!-- Chart Section -->
+<!-- Chart Section (data pendapatan mingguan asli dari database) -->
+@php
+    $maxTrendMingguan = max(1, collect($trendMingguan['hari'])->max('total'));
+@endphp
 <div class="reveal reveal-delay-2 bg-surface-container-lowest rounded-lg p-stack-lg ambient-shadow border border-outline-variant/20">
-<div class="flex justify-between items-center mb-stack-md">
+<div class="flex justify-between items-center mb-stack-md flex-wrap gap-2">
+<div>
 <h3 class="font-headline-md text-on-background">Tren Pendapatan Mingguan</h3>
-<button class="text-secondary font-label-sm flex items-center gap-1 hover:underline">
-                            Filter <span class="material-symbols-outlined text-sm">filter_list</span>
-</button>
+<p class="font-label-sm text-xs text-outline mt-1">{{ $trendMingguan['start']->translatedFormat('d M') }} - {{ $trendMingguan['end']->translatedFormat('d M Y') }}</p>
 </div>
-<!-- Placeholder for Chart (Simulated with simple bars) -->
+<form method="GET" class="flex items-center gap-2">
+<label for="minggu-filter" class="sr-only">Pilih minggu</label>
+<input type="date" id="minggu-filter" name="minggu" value="{{ $trendMingguan['start']->toDateString() }}" onchange="this.form.submit()" class="bg-surface border border-outline-variant text-on-surface-variant font-label-sm text-label-sm rounded-lg px-3 py-2 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none">
+@if(request()->query('minggu'))
+<a href="{{ route('admin.dashboard') }}" class="text-secondary font-label-sm text-label-sm hover:underline whitespace-nowrap">Minggu Ini</a>
+@endif
+</form>
+</div>
+<!-- Bar Chart (tinggi batang proporsional terhadap pendapatan tertinggi minggu ini) -->
 <div class="h-64 w-full flex items-end justify-between gap-2 pt-4 border-b border-outline-variant/30 pb-2 relative">
-<!-- Y-axis labels simulated -->
+<!-- Y-axis labels (skala mengikuti pendapatan tertinggi minggu berjalan) -->
 <div class="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-outline opacity-50 -ml-2 transform -translate-x-full">
-<span class="">15M</span><span class="">10M</span><span class="">5M</span><span class="">0</span>
+<span>Rp {{ number_format($maxTrendMingguan, 0, ',', '.') }}</span>
+<span>Rp {{ number_format((int) round($maxTrendMingguan / 2), 0, ',', '.') }}</span>
+<span>0</span>
 </div>
 <div class="w-full flex justify-around items-end h-full px-4">
-<div class="w-1/12 bg-primary-container h-[40%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer relative group">
-<span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-surface shadow-sm px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Rp 6M</span>
+@foreach ($trendMingguan['hari'] as $hari)
+<div class="w-1/12 {{ $hari['isToday'] ? 'bg-secondary' : 'bg-primary-container' }} {{ $hari['isToday'] ? 'hover:bg-secondary-fixed' : 'hover:bg-primary' }} rounded-t-sm transition-colors cursor-pointer relative group" style="height: {{ max(2, round(($hari['total'] / $maxTrendMingguan) * 100)) }}%;">
+<span class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-surface shadow-sm px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp {{ number_format($hari['total'], 0, ',', '.') }}</span>
 </div>
-<div class="w-1/12 bg-primary-container h-[60%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer relative group"></div>
-<div class="w-1/12 bg-primary-container h-[55%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer relative group"></div>
-<div class="w-1/12 bg-secondary h-[85%] rounded-t-sm hover:bg-secondary-fixed transition-colors cursor-pointer relative group"></div>
-<div class="w-1/12 bg-primary-container h-[45%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer relative group"></div>
-<div class="w-1/12 bg-primary-container h-[70%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer relative group"></div>
-<div class="w-1/12 bg-primary-container h-[90%] rounded-t-sm hover:bg-primary transition-colors cursor-pointer relative group"></div>
+@endforeach
 </div>
 </div>
 <div class="flex justify-around text-xs text-outline mt-2 px-4">
-<span class="">Sen</span><span class="">Sel</span><span class="">Rab</span><span class="">Kam</span><span class="">Jum</span><span class="">Sab</span><span class="">Min</span>
+@foreach ($trendMingguan['hari'] as $hari)
+<span class="{{ $hari['isToday'] ? 'text-secondary font-bold' : '' }}">{{ $hari['label'] }}</span>
+@endforeach
 </div>
 </div>
 </div>
@@ -168,10 +178,10 @@
 
                     <h4 class="font-label-md mb-1">Butuh Bantuan?</h4>
                     <p class="font-body-sm text-sm text-outline mb-3">Hubungi tim support IT jika ada kendala sistem.</p>
-                    <button id="help-action" class="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-md font-label-sm flex items-center gap-2 hover:bg-tertiary-fixed-dim transition-colors">
+                    <a id="help-action" href="https://wa.me/6281199887766?text={{ urlencode('Halo tim support Padel Anggun, saya butuh bantuan terkait panel admin.') }}" target="_blank" rel="noopener noreferrer" class="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-md font-label-sm flex items-center gap-2 hover:bg-tertiary-fixed-dim transition-colors w-fit">
                         <span class="material-symbols-outlined text-sm">support_agent</span>
                         Hubungi Support
-                    </button>
+                    </a>
                 </div>
             </div>
 
