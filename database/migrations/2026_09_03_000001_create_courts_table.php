@@ -17,7 +17,10 @@ return new class extends Migration
             $table->unsignedInteger('harga')->default(0);
             $table->unsignedInteger('harga_coret')->nullable(); // harga sebelum diskon, kalau ada promo
             $table->string('deskripsi', 1000)->nullable();
-            $table->string('gambar_utama')->nullable();
+            // text (bukan string/VARCHAR 255) karena URL gambar bisa lebih
+            // dari 255 karakter — VARCHAR 255 di MySQL akan menolak data
+            // yang lebih panjang (beda dengan SQLite yang tidak strict).
+            $table->text('gambar_utama')->nullable();
             // Jam-jam slot yang bisa dipesan pelanggan, mis. ["08:00", "10:00", ...]
             $table->json('slot')->nullable();
             // Status operasional harian yang dikelola admin dari panel Kelola Lapangan.
