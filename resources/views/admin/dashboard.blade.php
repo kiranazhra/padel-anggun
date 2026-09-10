@@ -178,7 +178,7 @@
 
                     <h4 class="font-label-md mb-1">Butuh Bantuan?</h4>
                     <p class="font-body-sm text-sm text-outline mb-3">Hubungi tim support IT jika ada kendala sistem.</p>
-                    <a id="help-action" href="https://wa.me/6281199887766?text={{ urlencode('Halo tim support Padel Anggun, saya butuh bantuan terkait panel admin.') }}" target="_blank" rel="noopener noreferrer" class="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-md font-label-sm flex items-center gap-2 hover:bg-tertiary-fixed-dim transition-colors w-fit">
+                    <a id="help-action" href="https://wa.me/628134256613?text={{ urlencode('Halo tim support Padel Anggun, saya butuh bantuan terkait panel admin.') }}" target="_blank" rel="noopener noreferrer" class="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-md font-label-sm flex items-center gap-2 hover:bg-tertiary-fixed-dim transition-colors w-fit">
                         <span class="material-symbols-outlined text-sm">support_agent</span>
                         Hubungi Support
                     </a>
